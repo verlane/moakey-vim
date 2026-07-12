@@ -4,6 +4,13 @@
 
     <PreferenceCategory app:title="@string/settings_hangul_section">
 
+        <SwitchPreferenceCompat
+            app:key="english_keyboard_enabled"
+            app:title="@string/settings_english_keyboard_enabled_title"
+            app:summary="@string/settings_english_keyboard_enabled_description"
+            app:defaultValue="true"
+            app:icon="@drawable/ic_pref_keyboard" />
+
         <ListPreference
             app:key="hangul_input_mode"
             app:title="@string/settings_hangul_input_mode_title"

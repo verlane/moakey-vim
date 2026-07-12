@@ -27,7 +27,6 @@ import dev.bsb.moakeyvim.databinding.OpenMoaViewMoakeyBinding
 import dev.bsb.moakeyvim.view.keytouchlistener.CrossKeyTouchListener
 import dev.bsb.moakeyvim.view.keytouchlistener.EnterKeyTouchListener
 import dev.bsb.moakeyvim.view.keytouchlistener.JaumKeyTouchListener
-import dev.bsb.moakeyvim.view.keytouchlistener.LanguageKeyTouchListener
 import dev.bsb.moakeyvim.view.keytouchlistener.RepeatKeyTouchListener
 import dev.bsb.moakeyvim.view.keytouchlistener.SimpleKeyTouchListener
 import dev.bsb.moakeyvim.view.keytouchlistener.SpaceKeyTouchListener
@@ -225,7 +224,6 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
             tieutKey.setOnTouchListener(phraseListener("ㅌ", QuickPhraseKey.TIEUT))
             chieutKey.setOnTouchListener(phraseListener("ㅊ", QuickPhraseKey.CHIEUT))
             pieupKey.setOnTouchListener(phraseListener("ㅍ", QuickPhraseKey.PIEUP))
-            languageKey.setOnTouchListener(LanguageKeyTouchListener(context))
             hanjaNumberPunctuationKey.setOnTouchListener(
                 SimpleKeyTouchListener(
                     context, SpecialKeyMessage(SpecialKey.HANJA_NUMBER_PUNCTUATION)
@@ -261,9 +259,9 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
         cs.setHorizontalWeight(R.id.moeumKey, 0f)
         cs.connect(R.id.spaceKey, ConstraintSet.RIGHT, R.id.enterKey, ConstraintSet.LEFT)
         cs.connect(R.id.enterKey, ConstraintSet.LEFT, R.id.spaceKey, ConstraintSet.RIGHT)
-        cs.setHorizontalWeight(R.id.emojiKey, 0.5f)
-        cs.setHorizontalWeight(R.id.spaceKey, 2f)
-        cs.setHorizontalWeight(R.id.enterKey, 1.5f)
+        cs.setHorizontalWeight(R.id.emojiKey, 1f)
+        cs.setHorizontalWeight(R.id.spaceKey, 4f)
+        cs.setHorizontalWeight(R.id.enterKey, 1f)
         cs.applyTo(parent)
     }
 
@@ -319,7 +317,6 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
             emojiKey.setOnTouchListener(
                 SimpleKeyTouchListener(context, SpecialKeyMessage(SpecialKey.EMOJI))
             )
-            languageKey.setOnTouchListener(LanguageKeyTouchListener(context))
             hanjaNumberPunctuationKey.setOnTouchListener(
                 SimpleKeyTouchListener(
                     context, SpecialKeyMessage(SpecialKey.HANJA_NUMBER_PUNCTUATION)

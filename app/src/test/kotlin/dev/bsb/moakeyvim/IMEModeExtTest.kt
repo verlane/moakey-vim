@@ -25,27 +25,4 @@ class IMEModeExtTest {
         assertFalse(IMEMode.IME_EN_PUNCTUATION.isKoreanFamily())
         assertFalse(IMEMode.IME_EN_NUMBER.isKoreanFamily())
     }
-
-    @Test
-    fun `토글 - 기본 모드는 반대 언어로 전환`() {
-        assertEquals(IMEMode.IME_EN, IMEMode.IME_KO.resolveLanguageSwitchTarget())
-        assertEquals(IMEMode.IME_KO, IMEMode.IME_EN.resolveLanguageSwitchTarget())
-    }
-
-    @Test
-    fun `토글 - 한국어 계열 보조 모드는 IME_KO로 복귀`() {
-        assertEquals(IMEMode.IME_KO, IMEMode.IME_KO_PUNCTUATION.resolveLanguageSwitchTarget())
-        assertEquals(IMEMode.IME_KO, IMEMode.IME_KO_NUMBER.resolveLanguageSwitchTarget())
-        assertEquals(IMEMode.IME_KO, IMEMode.IME_KO_ARROW.resolveLanguageSwitchTarget())
-        assertEquals(IMEMode.IME_KO, IMEMode.IME_KO_PHONE.resolveLanguageSwitchTarget())
-        assertEquals(IMEMode.IME_KO, IMEMode.IME_EMOJI.resolveLanguageSwitchTarget())
-    }
-
-    @Test
-    fun `토글 - 영어 계열 보조 모드는 IME_EN으로 복귀`() {
-        assertEquals(IMEMode.IME_EN, IMEMode.IME_EN_PUNCTUATION.resolveLanguageSwitchTarget())
-        assertEquals(IMEMode.IME_EN, IMEMode.IME_EN_NUMBER.resolveLanguageSwitchTarget())
-        assertEquals(IMEMode.IME_EN, IMEMode.IME_EN_ARROW.resolveLanguageSwitchTarget())
-        assertEquals(IMEMode.IME_EN, IMEMode.IME_EN_PHONE.resolveLanguageSwitchTarget())
-    }
 }

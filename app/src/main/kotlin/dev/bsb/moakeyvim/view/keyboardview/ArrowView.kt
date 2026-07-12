@@ -9,7 +9,6 @@ import dev.bsb.moakeyvim.config.KeyboardSkin
 import dev.bsb.moakeyvim.databinding.ArrowViewBinding
 import dev.bsb.moakeyvim.view.keytouchlistener.EnterKeyTouchListener
 import dev.bsb.moakeyvim.view.keytouchlistener.FunctionalKeyTouchListener
-import dev.bsb.moakeyvim.view.keytouchlistener.LanguageKeyTouchListener
 import dev.bsb.moakeyvim.view.message.SpecialKey
 import dev.bsb.moakeyvim.view.keytouchlistener.RepeatKeyTouchListener
 import dev.bsb.moakeyvim.view.keytouchlistener.SimpleKeyTouchListener
@@ -39,7 +38,6 @@ class ArrowView : ConstraintLayout {
     private var isSelecting = false
     private var currentSkin: KeyboardSkin = KeyboardSkin.DEFAULT
     private var enterKeyListener: EnterKeyTouchListener? = null
-    private var languageKeyListener: LanguageKeyTouchListener? = null
     private var upKeyListener: RepeatKeyTouchListener? = null
     private var downKeyListener: RepeatKeyTouchListener? = null
     private var leftKeyListener: RepeatKeyTouchListener? = null
@@ -142,9 +140,6 @@ class ArrowView : ConstraintLayout {
             backspaceKey.setOnTouchListener(
                 RepeatKeyTouchListener(context, SpecialKeyMessage(SpecialKey.BACKSPACE))
             )
-            languageKeyListener?.cancel()
-            languageKeyListener = LanguageKeyTouchListener(context)
-            languageKey.setOnTouchListener(languageKeyListener)
             hanjaNumberPunctuationKey.setOnTouchListener(
                 SimpleKeyTouchListener(
                     context, SpecialKeyMessage(SpecialKey.HANJA_NUMBER_PUNCTUATION)
@@ -160,7 +155,6 @@ class ArrowView : ConstraintLayout {
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         enterKeyListener?.cancel()
-        languageKeyListener?.cancel()
         upKeyListener?.endRepeat()
         downKeyListener?.endRepeat()
         leftKeyListener?.endRepeat()

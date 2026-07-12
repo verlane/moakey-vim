@@ -86,6 +86,8 @@
     <string name="settings_english_section">키보드 입력</string>
     <string name="settings_shortcut_section">단축 기능</string>
     <string name="settings_hangul_input_mode_title">입력 방식</string>
+    <string name="settings_english_keyboard_enabled_title">영어 키보드 사용</string>
+    <string name="settings_english_keyboard_enabled_description">시스템 언어 전환 시 영어 키보드를 표시할지 설정합니다</string>
     <string name="settings_shortcut_title">단축키</string>
     <string name="settings_shortcut_description">자음·모음 키를 길게 눌러 입력할 단축 문구를 설정합니다</string>
     <string name="settings_gesture_angle_title">긋기 조절</string>
