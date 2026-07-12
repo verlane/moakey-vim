@@ -54,6 +54,7 @@ object SettingsPreferences {
     const val KEY_HW_CAPSLOCK_TO_CTRL = "hw_capslock_to_ctrl"
     const val KEY_HW_TAB_VIM_MODE = "hw_tab_vim_mode"
     const val KEY_LEARNED_WORDS_SORT_ORDER = "learned_words_sort_order"
+    const val KEY_ENGLISH_KEYBOARD_ENABLED = "english_keyboard_enabled"
 
     val ALL_KEYS = setOf(
         KEY_HANGUL_INPUT_MODE,
@@ -88,10 +89,18 @@ object SettingsPreferences {
         KEY_OVERLAY_PERMISSION_NOTIFIED,
         KEY_HW_CAPSLOCK_TO_CTRL,
         KEY_HW_TAB_VIM_MODE,
+        KEY_ENGLISH_KEYBOARD_ENABLED,
     ) + UserCharKey.values().map { it.prefKey }.toSet()
 
     private fun prefs(context: Context) =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
+    fun getEnglishKeyboardEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_ENGLISH_KEYBOARD_ENABLED, true)
+
+    fun setEnglishKeyboardEnabled(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(KEY_ENGLISH_KEYBOARD_ENABLED, enabled).apply()
+    }
 
     fun getKeyPreviewEnabled(context: Context): Boolean =
         prefs(context).getBoolean(KEY_KEY_PREVIEW, true)

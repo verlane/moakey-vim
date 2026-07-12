@@ -17,11 +17,13 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.view.inputmethod.InputMethodManager
+import android.view.inputmethod.InputMethodSubtype
 import android.text.InputType
 import android.util.Size
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowInsets
 import android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.ExtractedText
@@ -703,16 +705,17 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                                 setKeyboard(
                                     when (imeMode) {
                                         IMEMode.IME_KO,
-                                        IMEMode.IME_KO_NUMBER,
                                         IMEMode.IME_KO_ARROW,
                                         IMEMode.IME_KO_PHONE,
                                         IMEMode.IME_EMOJI -> IMEMode.IME_KO_PUNCTUATION
+                                        IMEMode.IME_KO_PUNCTUATION -> IMEMode.IME_KO_NUMBER
+                                        IMEMode.IME_KO_NUMBER -> IMEMode.IME_KO
+
                                         IMEMode.IME_EN,
-                                        IMEMode.IME_EN_NUMBER,
                                         IMEMode.IME_EN_ARROW,
                                         IMEMode.IME_EN_PHONE -> IMEMode.IME_EN_PUNCTUATION
-                                        IMEMode.IME_KO_PUNCTUATION -> IMEMode.IME_KO_NUMBER
                                         IMEMode.IME_EN_PUNCTUATION -> IMEMode.IME_EN_NUMBER
+                                        IMEMode.IME_EN_NUMBER -> IMEMode.IME_EN
                                     }
                                 )
                             }
@@ -961,6 +964,16 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         )
     }
 
+    override fun onCurrentInputMethodSubtypeChanged(newSubtype: InputMethodSubtype) {
+        super.onCurrentInputMethodSubtypeChanged(newSubtype)
+        val isKorean = newSubtype.languageTag.startsWith("ko")
+        if (!isKorean && !SettingsPreferences.getEnglishKeyboardEnabled(this)) {
+            switchToNextInputMethod(false)
+            return
+        }
+        setKeyboard(if (isKorean) IMEMode.IME_KO else IMEMode.IME_EN)
+    }
+
     private fun setKeyboard(mode: IMEMode) {
         if (this::keyboardViews.isInitialized && this::binding.isInitialized) {
             finishComposing()
@@ -983,7 +996,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     }
 
     private fun toggleLanguage() {
-        setKeyboard(imeMode.resolveLanguageSwitchTarget())
+        switchToNextInputMethod(false)
     }
 
     private fun setShiftAutomatically() {
@@ -1122,6 +1135,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         }
         applyKeyboardLayout()
         setKeyboard(imeMode)
+        applyGestureNavigationSpacing(view)
         return view
     }
 
@@ -1290,46 +1304,24 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         refreshKoViewIfNeeded()
         (keyboardViews[IMEMode.IME_KO] as? OpenMoaView)?.refreshQuickPhraseBadges()
         (keyboardViews[IMEMode.IME_KO] as? OpenMoaView)?.refreshUserCharLabels()
-        (keyboardViews[IMEMode.IME_KO] as? OpenMoaView)?.refreshEmojiIcon()
+        (keyboardViews[IMEMode.IME_KO] as? OpenMoaView)?.        refreshEmojiIcon()
         applyKeyboardLayout()
+        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+        val subtype = imm?.currentInputMethodSubtype
+        var isKorean = subtype?.languageTag?.startsWith("ko") ?: true
+        if (!isKorean && !SettingsPreferences.getEnglishKeyboardEnabled(this)) {
+            isKorean = true
+        }
         when ((info?.inputType ?: 0) and InputType.TYPE_MASK_CLASS) {
             InputType.TYPE_CLASS_NUMBER -> {
-                setKeyboard(
-                    when(imeMode) {
-                        IMEMode.IME_KO,
-                        IMEMode.IME_KO_PUNCTUATION,
-                        IMEMode.IME_KO_NUMBER,
-                        IMEMode.IME_KO_ARROW,
-                        IMEMode.IME_KO_PHONE,
-                        IMEMode.IME_EMOJI -> IMEMode.IME_KO_NUMBER
-                        IMEMode.IME_EN,
-                        IMEMode.IME_EN_PUNCTUATION,
-                        IMEMode.IME_EN_NUMBER,
-                        IMEMode.IME_EN_ARROW,
-                        IMEMode.IME_EN_PHONE -> IMEMode.IME_EN_NUMBER
-                    }
-                )
+                setKeyboard(if (isKorean) IMEMode.IME_KO_NUMBER else IMEMode.IME_EN_NUMBER)
             }
             InputType.TYPE_CLASS_PHONE -> {
-                setKeyboard(
-                    when(imeMode) {
-                        IMEMode.IME_KO,
-                        IMEMode.IME_KO_PUNCTUATION,
-                        IMEMode.IME_KO_NUMBER,
-                        IMEMode.IME_KO_ARROW,
-                        IMEMode.IME_KO_PHONE,
-                        IMEMode.IME_EMOJI -> IMEMode.IME_KO_PHONE
-                        IMEMode.IME_EN,
-                        IMEMode.IME_EN_PUNCTUATION,
-                        IMEMode.IME_EN_NUMBER,
-                        IMEMode.IME_EN_ARROW,
-                        IMEMode.IME_EN_PHONE -> IMEMode.IME_EN_PHONE
-                    }
-                )
+                setKeyboard(if (isKorean) IMEMode.IME_KO_PHONE else IMEMode.IME_EN_PHONE)
             }
             else -> {
                 setShiftAutomatically()
-                returnFromNonStringKeyboard()
+                setKeyboard(if (isKorean) IMEMode.IME_KO else IMEMode.IME_EN)
             }
         }
     }
@@ -1726,6 +1718,9 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                 setKeyboard(imeMode)
             }
         }
+        if (this::binding.isInitialized) {
+            applyGestureNavigationSpacing(binding.root)
+        }
         hardwareKeyboardController.onConfigurationChanged()
     }
 
@@ -1950,6 +1945,28 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     private fun isSimpleQwertyKoActive(): Boolean {
         val v = if (this::keyboardViews.isInitialized) keyboardViews[IMEMode.IME_KO] else null
         return (v as? QuertyKoView)?.simple == true
+    }
+
+    private fun applyGestureNavigationSpacing(rootView: View) {
+        rootView.post {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val windowInsets = rootView.rootWindowInsets
+                val gestureInsets = windowInsets?.getInsets(WindowInsets.Type.systemGestures())
+                val isGestureNavigation = (gestureInsets?.left ?: 0) > 0 || (gestureInsets?.right ?: 0) > 0
+
+                val paddingBottom = if (isGestureNavigation) {
+                    (60 * resources.displayMetrics.density).toInt()
+                } else {
+                    0
+                }
+                rootView.setPadding(
+                    rootView.paddingLeft,
+                    rootView.paddingTop,
+                    rootView.paddingRight,
+                    paddingBottom
+                )
+            }
+        }
     }
 
     companion object {

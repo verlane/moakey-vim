@@ -14,7 +14,6 @@ import dev.bsb.moakeyvim.view.message.SpecialKey
 import dev.bsb.moakeyvim.quickphrase.NumberLongKey
 import dev.bsb.moakeyvim.view.keytouchlistener.EnterKeyTouchListener
 import dev.bsb.moakeyvim.view.keytouchlistener.FunctionalKeyTouchListener
-import dev.bsb.moakeyvim.view.keytouchlistener.LanguageKeyTouchListener
 import dev.bsb.moakeyvim.view.keytouchlistener.QwertyKeyTouchListener
 import dev.bsb.moakeyvim.view.keytouchlistener.RepeatKeyTouchListener
 import dev.bsb.moakeyvim.view.keytouchlistener.SimpleKeyTouchListener
@@ -50,7 +49,6 @@ class PunctuationView : ConstraintLayout, KoinComponent {
     private var previewController: KeyPreviewController? = null
     private val topRowNumberListeners = mutableListOf<QwertyKeyTouchListener>()
     private var enterKeyListener: EnterKeyTouchListener? = null
-    private var languageKeyListener: LanguageKeyTouchListener? = null
     private var page = 0
     private val prefs by lazy {
         context.getSharedPreferences(SettingsPreferences.PREFS_NAME, Context.MODE_PRIVATE)
@@ -82,7 +80,6 @@ class PunctuationView : ConstraintLayout, KoinComponent {
         previewController?.cancel()
         topRowNumberListeners.forEach { it.cancel() }
         enterKeyListener?.cancel()
-        languageKeyListener?.cancel()
     }
 
     private fun updateTopRowHints() {
@@ -189,9 +186,6 @@ class PunctuationView : ConstraintLayout, KoinComponent {
             backspaceKey.setOnTouchListener(
                 RepeatKeyTouchListener(context, SpecialKeyMessage(SpecialKey.BACKSPACE))
             )
-            languageKeyListener?.cancel()
-            languageKeyListener = LanguageKeyTouchListener(context)
-            languageKey.setOnTouchListener(languageKeyListener)
             hanjaNumberPunctuationKey.setOnTouchListener(
                 SimpleKeyTouchListener(
                     context, SpecialKeyMessage(SpecialKey.HANJA_NUMBER_PUNCTUATION)

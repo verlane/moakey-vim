@@ -167,6 +167,10 @@ class LearnedWordsActivity : AppCompatActivity() {
     }
 
     private fun setupTabButtons() {
+        if (!SettingsPreferences.getEnglishKeyboardEnabled(this)) {
+            binding.tabEnButton.visibility = android.view.View.GONE
+            if (currentTab == Tab.EN) currentTab = Tab.KO
+        }
         val checkId = when (currentTab) {
             Tab.EN -> R.id.tabEnButton
             Tab.BLACKLIST -> R.id.tabBlacklistButton

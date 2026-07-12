@@ -67,6 +67,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             SettingsPreferences.KEY_OVERLAY_PERMISSION_NOTIFIED,
             SettingsPreferences.KEY_HW_CAPSLOCK_TO_CTRL,
             SettingsPreferences.KEY_HW_TAB_VIM_MODE,
+            SettingsPreferences.KEY_ENGLISH_KEYBOARD_ENABLED,
         )
 
         private val ALLOWED_KEYS: Set<String> by lazy {
@@ -88,6 +89,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             SettingsPreferences.KEY_WORD_SUGGESTION_ENABLED,
             SettingsPreferences.KEY_KOREAN_WORD_SUGGESTION_ENABLED -> updateSuggestionDependents()
             SettingsPreferences.KEY_HW_TAB_VIM_MODE -> updateVimDependents()
+            SettingsPreferences.KEY_ENGLISH_KEYBOARD_ENABLED -> updateEnglishDependents()
         }
     }
 
@@ -104,6 +106,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         updateClipboardDependents()
         updateSuggestionDependents()
         updateVimDependents()
+        updateEnglishDependents()
     }
 
     override fun onResume() {
@@ -276,6 +279,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val prefs = preferenceManager.sharedPreferences ?: return
         val enabled = prefs.getBoolean(SettingsPreferences.KEY_HW_TAB_VIM_MODE, false)
         pref<Preference>("pref_vim_keymap")?.isEnabled = enabled
+    }
+
+    private fun updateEnglishDependents() {
+        val prefs = preferenceManager.sharedPreferences ?: return
+        val enabled = prefs.getBoolean(SettingsPreferences.KEY_ENGLISH_KEYBOARD_ENABLED, true)
+        pref<Preference>(SettingsPreferences.KEY_AUTO_CAPITALIZE_ENGLISH)?.isEnabled = enabled
+        pref<Preference>(SettingsPreferences.KEY_WORD_SUGGESTION_ENABLED)?.isEnabled = enabled
     }
 
     private fun updateGestureAngleSummary() {

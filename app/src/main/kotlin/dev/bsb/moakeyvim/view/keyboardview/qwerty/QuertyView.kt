@@ -17,7 +17,6 @@ import dev.bsb.moakeyvim.quickphrase.QwertyLongKeyRepository
 import dev.bsb.moakeyvim.view.keytouchlistener.CrossKeyTouchListener
 import dev.bsb.moakeyvim.view.keytouchlistener.EnterKeyTouchListener
 import dev.bsb.moakeyvim.view.keytouchlistener.FunctionalKeyTouchListener
-import dev.bsb.moakeyvim.view.keytouchlistener.LanguageKeyTouchListener
 import dev.bsb.moakeyvim.view.keytouchlistener.QwertyKeyTouchListener
 import dev.bsb.moakeyvim.view.keytouchlistener.RepeatKeyTouchListener
 import dev.bsb.moakeyvim.view.keytouchlistener.SimpleKeyTouchListener
@@ -58,7 +57,6 @@ open class QuertyView : ConstraintLayout, KoinComponent {
     private val configurableLongKeyListeners = mutableListOf<QwertyKeyTouchListener>()
     private val numberRowListeners = mutableListOf<QwertyKeyTouchListener>()
     private var enterKeyListener: EnterKeyTouchListener? = null
-    private var languageKeyListener: LanguageKeyTouchListener? = null
     private val prefs by lazy {
         context.getSharedPreferences(SettingsPreferences.PREFS_NAME, Context.MODE_PRIVATE)
     }
@@ -113,7 +111,6 @@ open class QuertyView : ConstraintLayout, KoinComponent {
         configurableLongKeyListeners.forEach { it.cancel() }
         numberRowListeners.forEach { it.cancel() }
         enterKeyListener?.cancel()
-        languageKeyListener?.cancel()
     }
 
     override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
@@ -214,9 +211,6 @@ open class QuertyView : ConstraintLayout, KoinComponent {
             backspaceKey.setOnTouchListener(
                 RepeatKeyTouchListener(context, SpecialKeyMessage(SpecialKey.BACKSPACE))
             )
-            languageKeyListener?.cancel()
-            languageKeyListener = LanguageKeyTouchListener(context)
-            languageKey.setOnTouchListener(languageKeyListener)
             hanjaNumberPunctuationKey.setOnTouchListener(
                 SimpleKeyTouchListener(
                     context, SpecialKeyMessage(SpecialKey.HANJA_NUMBER_PUNCTUATION)
