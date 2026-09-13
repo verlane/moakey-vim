@@ -17,7 +17,9 @@ import kotlin.math.pow
 object SuggestionAccentColor {
 
     private const val MIN_CONTRAST = 4.5
-    private const val STEP = 0.02
+    // 명도를 1/STEPS 씩 밀어 탐색한다. 개수로 세야 마지막 한 칸(완전한 검정/흰색)까지 밟는다
+    // - 실수 누적(amount += STEP)으로 돌리면 0.98 에서 멈춘다
+    private const val STEPS = 50
     private const val BLACK = 0xFF000000.toInt()
     private const val WHITE = 0xFFFFFFFF.toInt()
 
@@ -27,8 +29,8 @@ object SuggestionAccentColor {
         val darken = contrastRatio(BLACK, background) >= contrastRatio(WHITE, background)
         var best = accent
         var bestRatio = contrastRatio(accent, background)
-        var amount = STEP
-        while (amount <= 1.0) {
+        for (step in 1..STEPS) {
+            val amount = step.toDouble() / STEPS
             val candidate = if (darken) scaleToBlack(accent, amount) else blendToWhite(accent, amount)
             val ratio = contrastRatio(candidate, background)
             if (ratio >= minContrast) return candidate
@@ -36,7 +38,6 @@ object SuggestionAccentColor {
                 best = candidate
                 bestRatio = ratio
             }
-            amount += STEP
         }
         return best
     }

@@ -74,6 +74,18 @@ class SuggestionAccentColorTest {
         assertTrue(SuggestionAccentColor.contrastRatio(resolved, background) >= 4.5)
     }
 
+    // 탐색이 마지막 한 칸(완전한 검정)까지 실제로 밟는지 확인한다.
+    // 흰 배경에서 21:1 을 만족하는 색은 순수 검정뿐이라, 중간에서 멈추면 실패한다.
+    @Test
+    fun `search reaches the extreme when only pure black satisfies the threshold`() {
+        val resolved = SuggestionAccentColor.resolve(
+            0xFFFFFFFF.toInt(),
+            0xFFFFFFFF.toInt(),
+            minContrast = 21.0,
+        )
+        assertEquals(0xFF000000.toInt(), resolved)
+    }
+
     @Test
     fun `accent on mid gray background picks the side with more contrast`() {
         val background = 0xFF808080.toInt()

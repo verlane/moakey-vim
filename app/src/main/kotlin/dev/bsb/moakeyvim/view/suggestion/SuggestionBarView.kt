@@ -43,6 +43,8 @@ class SuggestionBarView @JvmOverloads constructor(
     private var currentBgColor: Int
     private var currentKeyBgColor: Int
     private var currentAccentColor: Int
+    private var accentCacheSkin: KeyboardSkin? = null
+    private var accentCacheBg: Int = 0
 
     init {
         val skin = SettingsPreferences.getKeyboardSkin(context)
@@ -128,10 +130,10 @@ class SuggestionBarView @JvmOverloads constructor(
         if (words.isNotEmpty()) {
             val skin = SettingsPreferences.getKeyboardSkin(context)
             val wordColor = dimTextColor(SkinApplier.fgColor(context, skin))
-            currentAccentColor = resolveAccentColor(skin, SkinApplier.keyboardBgColor(context, skin))
+            val accentColor = resolveAccentColor(skin, SkinApplier.keyboardBgColor(context, skin))
             words.forEach { word ->
                 container.addView(
-                    buildWordView(word, word in hotstringExpansions, wordColor, currentAccentColor)
+                    buildWordView(word, word in hotstringExpansions, wordColor, accentColor)
                 )
             }
         }
@@ -193,7 +195,7 @@ class SuggestionBarView @JvmOverloads constructor(
         currentTextColor = dimTextColor(textColor)
         currentBgColor = bgColor
         currentKeyBgColor = keyBgColor
-        currentAccentColor = resolveAccentColor(SettingsPreferences.getKeyboardSkin(context), bgColor)
+        resolveAccentColor(SettingsPreferences.getKeyboardSkin(context), bgColor)
         setBackgroundColor(bgColor)
         val tintList = ColorStateList.valueOf(textColor)
         btnCursorLeft.imageTintList = tintList
@@ -359,8 +361,16 @@ class SuggestionBarView @JvmOverloads constructor(
         }
     }
 
-    private fun resolveAccentColor(skin: KeyboardSkin, bgColor: Int): Int =
-        SuggestionAccentColor.resolve(SkinApplier.fgAccentColor(context, skin), bgColor)
+    // setSuggestions() 가 키 입력마다 호출되므로 대비 탐색 결과를 캐싱한다.
+    // 결과는 스킨과 배경색에만 의존하고, 둘 다 스킨 변경 때만 바뀐다
+    private fun resolveAccentColor(skin: KeyboardSkin, bgColor: Int): Int {
+        if (skin != accentCacheSkin || bgColor != accentCacheBg) {
+            accentCacheSkin = skin
+            accentCacheBg = bgColor
+            currentAccentColor = SuggestionAccentColor.resolve(SkinApplier.fgAccentColor(context, skin), bgColor)
+        }
+        return currentAccentColor
+    }
 
     private fun dimTextColor(color: Int): Int {
         val hsv = FloatArray(3)
