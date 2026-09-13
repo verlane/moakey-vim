@@ -19,6 +19,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import dev.bsb.moakeyvim.R
+import dev.bsb.moakeyvim.config.KeyboardSkin
 import dev.bsb.moakeyvim.settings.SettingsPreferences
 import dev.bsb.moakeyvim.util.TextWidthClassifier
 import dev.bsb.moakeyvim.util.stripUrlPrefix
@@ -41,12 +42,16 @@ class SuggestionBarView @JvmOverloads constructor(
     private var currentTextColor: Int
     private var currentBgColor: Int
     private var currentKeyBgColor: Int
+    private var currentAccentColor: Int
+    private var accentCacheSkin: KeyboardSkin? = null
+    private var accentCacheBg: Int = 0
 
     init {
         val skin = SettingsPreferences.getKeyboardSkin(context)
         currentTextColor = SkinApplier.fgColor(context, skin)
         currentBgColor = SkinApplier.keyboardBgColor(context, skin)
         currentKeyBgColor = SkinApplier.keyBgColor(context, skin)
+        currentAccentColor = resolveAccentColor(skin, currentBgColor)
         setBackgroundColor(currentBgColor)
     }
     private var isUndoMode = true
@@ -125,7 +130,12 @@ class SuggestionBarView @JvmOverloads constructor(
         if (words.isNotEmpty()) {
             val skin = SettingsPreferences.getKeyboardSkin(context)
             val wordColor = dimTextColor(SkinApplier.fgColor(context, skin))
-            words.forEach { word -> container.addView(buildWordView(word, word in hotstringExpansions, wordColor)) }
+            val accentColor = resolveAccentColor(skin, SkinApplier.keyboardBgColor(context, skin))
+            words.forEach { word ->
+                container.addView(
+                    buildWordView(word, word in hotstringExpansions, wordColor, accentColor)
+                )
+            }
         }
     }
 
@@ -185,6 +195,7 @@ class SuggestionBarView @JvmOverloads constructor(
         currentTextColor = dimTextColor(textColor)
         currentBgColor = bgColor
         currentKeyBgColor = keyBgColor
+        resolveAccentColor(SettingsPreferences.getKeyboardSkin(context), bgColor)
         setBackgroundColor(bgColor)
         val tintList = ColorStateList.valueOf(textColor)
         btnCursorLeft.imageTintList = tintList
@@ -199,17 +210,25 @@ class SuggestionBarView @JvmOverloads constructor(
                     (child.getChildAt(1) as? TextView)?.setTextColor(textColor)
                     child.background = buildChipBackground()
                 }
+                child is TextView && child.tag == TAG_HOTSTRING_WORD ->
+                    child.setTextColor(currentAccentColor)
                 child is TextView -> child.setTextColor(currentTextColor)
                 child is ImageButton -> child.imageTintList = tintList
             }
         }
     }
 
-    private fun buildWordView(word: String, isHotstring: Boolean, wordColor: Int): TextView {
+    private fun buildWordView(
+        word: String,
+        isHotstring: Boolean,
+        wordColor: Int,
+        accentColor: Int,
+    ): TextView {
         return TextView(context).apply {
             text = word.trim()
             textSize = TEXT_SIZE_SP
-            setTextColor(wordColor)
+            setTextColor(if (isHotstring) accentColor else wordColor)
+            if (isHotstring) tag = TAG_HOTSTRING_WORD
             setPadding(hPad, vPad, hPad, vPad)
             gravity = Gravity.CENTER
             isClickable = true
@@ -342,6 +361,17 @@ class SuggestionBarView @JvmOverloads constructor(
         }
     }
 
+    // setSuggestions() 가 키 입력마다 호출되므로 대비 탐색 결과를 캐싱한다.
+    // 결과는 스킨과 배경색에만 의존하고, 둘 다 스킨 변경 때만 바뀐다
+    private fun resolveAccentColor(skin: KeyboardSkin, bgColor: Int): Int {
+        if (skin != accentCacheSkin || bgColor != accentCacheBg) {
+            accentCacheSkin = skin
+            accentCacheBg = bgColor
+            currentAccentColor = SuggestionAccentColor.resolve(SkinApplier.fgAccentColor(context, skin), bgColor)
+        }
+        return currentAccentColor
+    }
+
     private fun dimTextColor(color: Int): Int {
         val hsv = FloatArray(3)
         Color.colorToHSV(color, hsv)
@@ -370,6 +400,7 @@ class SuggestionBarView @JvmOverloads constructor(
 
     companion object {
         private const val TAG_CLIPBOARD_CHIP = "clipboard_chip"
+        private const val TAG_HOTSTRING_WORD = "hotstring_word"
         private const val TEXT_SIZE_SP = 15.3f
         private const val PADDING_H_DP = 5
         private const val PADDING_V_DP = 4
